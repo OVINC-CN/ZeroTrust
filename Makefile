@@ -1,4 +1,4 @@
-.PHONY: build run clean test deps
+.PHONY: build run clean test deps lint lint-fix
 
 BINARY_NAME=zerotrust
 BUILD_DIR=bin
@@ -21,3 +21,9 @@ deps:
 
 docker-build:
 	docker build -t $(BINARY_NAME):latest .
+
+lint:
+	golangci-lint run
+
+lint-fix:
+	golangci-lint run --fix

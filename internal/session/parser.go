@@ -23,7 +23,7 @@ type UserInfo struct {
 
 func ParseDjangoSession(ctx context.Context, data []byte) (*UserInfo, error) {
 	// start span
-	ctx, span := otel.Tracer().Start(ctx, "session.ParseDjangoSession")
+	_, span := otel.Tracer().Start(ctx, "session.ParseDjangoSession")
 	defer span.End()
 
 	// create reader and unpickler for session data
