@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/ovinc/zerotrust/internal/config"
+	"github.com/ovinc/zerotrust/internal/otel"
 	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
@@ -46,6 +47,11 @@ func init() {
 }
 
 func GetSession(ctx context.Context, sessionID string) (string, error) {
+	// start new span
+	ctx, span := otel.Tracer().Start(ctx, "store.redis.GetSession")
+	defer span.End()
+
+	// get session data from redis
 	return client.Get(ctx, config.Get().Redis.FormatSessionKey(sessionID)).Result()
 }
 

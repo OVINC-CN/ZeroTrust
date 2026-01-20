@@ -31,13 +31,13 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	// decode request body into struct
 	var req VerifyRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		logrus.Warnf("failed to decode request body: %v", err)
+		logrus.WithContext(ctx).Warnf("failed to decode request body: %v", err)
 		http.Error(w, "bad request", http.StatusBadRequest)
 		return
 	}
 
 	// log incoming verify request
-	logrus.Infof(
+	logrus.WithContext(ctx).Infof(
 		"verifying request: client_ip=%s, method=%s, host=%s, path=%s\nuser_agent=%s\nreferer=%s",
 		req.ClientIP,
 		req.Method,
@@ -56,21 +56,21 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	// get session data from redis
 	sessionData, err := store.GetSession(ctx, req.SessionID)
 	if err != nil {
-		logrus.Warnf("failed to get session from store: %v", err)
+		logrus.WithContext(ctx).Warnf("failed to get session from store: %v", err)
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 
 	// parse django session to extract user info
-	userInfo, err := session.ParseDjangoSession([]byte(sessionData))
+	userInfo, err := session.ParseDjangoSession(ctx, []byte(sessionData))
 	if err != nil {
-		logrus.Warnf("failed to parse session data: %v", err)
+		logrus.WithContext(ctx).Warnf("failed to parse session data: %v", err)
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 
 	// log successful authorization
-	logrus.Infof("request authorized: user_id=%s, session_id=%s", userInfo.UserID, maskSessionID(req.SessionID))
+	logrus.WithContext(ctx).Infof("request authorized: user_id=%s, session_id=%s", userInfo.UserID, maskSessionID(req.SessionID))
 
 	// return success response with user id
 	w.WriteHeader(http.StatusOK)

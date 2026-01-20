@@ -72,3 +72,7 @@ func Shutdown(ctx context.Context) {
 		_ = tracerProvider.Shutdown(ctx)
 	}
 }
+
+func Tracer() trace.Tracer {
+	return tracer
+}

@@ -2,10 +2,12 @@ package session
 
 import (
 	"bytes"
+	"context"
 	"errors"
 
 	"github.com/nlpodyssey/gopickle/pickle"
 	"github.com/nlpodyssey/gopickle/types"
+	"github.com/ovinc/zerotrust/internal/otel"
 )
 
 var (
@@ -19,7 +21,11 @@ type UserInfo struct {
 	UserHash string
 }
 
-func ParseDjangoSession(data []byte) (*UserInfo, error) {
+func ParseDjangoSession(ctx context.Context, data []byte) (*UserInfo, error) {
+	// start span
+	ctx, span := otel.Tracer().Start(ctx, "session.ParseDjangoSession")
+	defer span.End()
+
 	// create reader and unpickler for session data
 	reader := bytes.NewReader(data)
 	unpickler := pickle.NewUnpickler(reader)
