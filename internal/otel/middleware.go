@@ -19,6 +19,7 @@ func Middleware(next http.Handler) http.Handler {
 				attribute.String("http.url", r.URL.String()),
 				attribute.String("http.user_agent", r.UserAgent()),
 			),
+			trace.WithSpanKind(trace.SpanKindServer),
 		)
 		defer span.End()
 
