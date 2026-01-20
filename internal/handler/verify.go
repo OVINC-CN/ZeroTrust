@@ -38,7 +38,7 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 
 	// log incoming verify request
 	logrus.WithContext(ctx).Infof(
-		"verifying request: client_ip=%s, method=%s, host=%s, path=%s\nuser_agent=%s\nreferer=%s",
+		"verifying request from %s\n%s %s%s\nuser_agent: %s\nreferer: %s",
 		req.ClientIP,
 		req.Method,
 		req.Host,
@@ -70,7 +70,7 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// log successful authorization
-	logrus.WithContext(ctx).Infof("request authorized: user_id=%s, session_id=%s", userInfo.UserID, maskSessionID(req.SessionID))
+	logrus.WithContext(ctx).Infof("request authorized for %s (%s)", userInfo.UserID, maskSessionID(req.SessionID))
 
 	// return success response with user id
 	w.WriteHeader(http.StatusOK)
