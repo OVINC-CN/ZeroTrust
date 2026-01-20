@@ -1,0 +1,27 @@
+# ZeroTrust Configuration
+
+server:
+  host: "0.0.0.0"
+  port: 8080
+  read_timeout: 10s
+  write_timeout: 10s
+  idle_timeout: 30s
+
+redis:
+  host: "localhost"
+  port: 6379
+  password: ""
+  db: 0
+  # Session key format, use {session_id} as placeholder
+  session_key_format: ":1:django.contrib.sessions.cache{session_id}"
+
+otel:
+  enabled: false
+  endpoint: "localhost:4317"
+  service_name: "zerotrust"
+  insecure: true
+  resource:
+    service_name: "zerotrust"
+    service_version: "0.1.0"
+    environment: "development"
+    attributes: { }
