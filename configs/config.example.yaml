@@ -3,6 +3,9 @@
 server:
   host: "0.0.0.0"
   port: 8080
+  read_timeout: 10s
+  write_timeout: 10s
+  idle_timeout: 30s
 
 redis:
   host: "localhost"
@@ -12,16 +15,13 @@ redis:
   # Session key format, use {session_id} as placeholder
   session_key_format: ":1:django.contrib.sessions.cache{session_id}"
 
-auth:
-  # Action when unauthorized: "redirect" or "deny"
-  unauthorized_action: "redirect"
-  # Login URL for redirect action
-  login_url: "https://example.com/login"
-  # Cookie name for session ID
-  session_cookie_name: "sessionid"
-
 otel:
   enabled: false
   endpoint: "localhost:4317"
   service_name: "zerotrust"
   insecure: true
+  resource:
+    service_name: "zerotrust"
+    service_version: "0.1.0"
+    environment: "development"
+    attributes: { }
