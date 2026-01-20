@@ -1,0 +1,27 @@
+# ZeroTrust Configuration
+
+server:
+  host: "0.0.0.0"
+  port: 8080
+
+redis:
+  host: "localhost"
+  port: 6379
+  password: ""
+  db: 0
+  # Session key format, use {session_id} as placeholder
+  session_key_format: ":1:django.contrib.sessions.cache{session_id}"
+
+auth:
+  # Action when unauthorized: "redirect" or "deny"
+  unauthorized_action: "redirect"
+  # Login URL for redirect action
+  login_url: "https://example.com/login"
+  # Cookie name for session ID
+  session_cookie_name: "sessionid"
+
+otel:
+  enabled: false
+  endpoint: "localhost:4317"
+  service_name: "zerotrust"
+  insecure: true
