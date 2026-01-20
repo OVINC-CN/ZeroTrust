@@ -20,6 +20,7 @@ func init() {
 	})
 	logrus.SetOutput(os.Stdout)
 	logrus.SetLevel(logrus.InfoLevel)
+	logrus.SetReportCaller(true)
 
 	// add trace hook
 	logrus.AddHook(&TraceHook{})
