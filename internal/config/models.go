@@ -35,6 +35,7 @@ type AuthConfig struct {
 	SessionCookieName  string `yaml:"session_cookie_name"`
 	LoginUrl           string `yaml:"login_url"`
 	LoginRedirectParam string `yaml:"login_redirect_param"`
+	TraceIDHeader      string `yaml:"trace_id_header"`
 }
 
 type Config struct {
