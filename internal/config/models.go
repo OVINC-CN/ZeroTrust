@@ -30,8 +30,14 @@ type OTelConfig struct {
 	Resource ResourceConfig `yaml:"resource"`
 }
 
+type AuthConfig struct {
+	ClientIPHeader    string `yaml:"client_ip_header"`
+	SessionCookieName string `yaml:"session_cookie_name"`
+}
+
 type Config struct {
 	Server ServerConfig `yaml:"server"`
 	Redis  RedisConfig  `yaml:"redis"`
 	OTel   OTelConfig   `yaml:"otel"`
+	Auth   AuthConfig   `yaml:"auth"`
 }

@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
+	"github.com/ovinc/zerotrust/internal/config"
 	"github.com/ovinc/zerotrust/internal/session"
 	"github.com/ovinc/zerotrust/internal/store"
 	"github.com/sirupsen/logrus"
@@ -36,6 +38,34 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// perform authentication
+	doAuth(ctx, w, &req)
+}
+
+func ForwardAuthHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	cfg := config.Get()
+
+	// load info from headers
+	req := VerifyRequest{
+		ClientIP:  r.Header.Get(cfg.Auth.ClientIPHeader),
+		Method:    r.Header.Get("X-Forwarded-Method"),
+		Host:      r.Header.Get("X-Forwarded-Host"),
+		Path:      r.Header.Get("X-Forwarded-Uri"),
+		UserAgent: r.Header.Get("User-Agent"),
+		Referer:   r.Header.Get("Referer"),
+	}
+
+	// get session id from cookies
+	if cookie, err := r.Cookie(cfg.Auth.SessionCookieName); err == nil {
+		req.SessionID = cookie.Value
+	}
+
+	// perform authentication
+	doAuth(ctx, w, &req)
+}
+
+func doAuth(ctx context.Context, w http.ResponseWriter, req *VerifyRequest) {
 	// log incoming verify request
 	logrus.WithContext(ctx).Infof(
 		"verifying request from %s\n%s %s%s\nuser_agent: %s\nreferer: %s",
