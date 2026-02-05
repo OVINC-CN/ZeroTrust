@@ -37,12 +37,12 @@ func init() {
 			attribute.String("db.system", "Redis"),
 		),
 	); err != nil {
-		logrus.WithContext(ctx).Fatalf("failed to instrument redis tracing: %v", err)
+		logrus.WithContext(ctx).WithError(err).Fatal("failed to instrument redis tracing")
 	}
 
 	// ping redis to verify connectivity
 	if err := client.Ping(ctx).Err(); err != nil {
-		logrus.WithContext(ctx).Fatalf("failed to ping redis: %v", err)
+		logrus.WithContext(ctx).WithError(err).Fatal("failed to ping redis")
 	}
 }
 

@@ -29,7 +29,7 @@ func init() {
 	// build resource with configured attributes
 	res, err := buildResource(ctx, &cfg.Resource)
 	if err != nil {
-		logrus.Fatalf("failed to create resource: %s", err)
+		logrus.WithError(err).Fatal("failed to create resource")
 	}
 
 	// select exporter based on config
@@ -39,7 +39,7 @@ func init() {
 			otlptracegrpc.WithEndpoint(cfg.Endpoint),
 			otlptracegrpc.WithInsecure())
 		if err != nil {
-			logrus.Fatalf("failed to create trace exporter: %s", err)
+			logrus.WithError(err).Fatal("failed to create trace exporter")
 		}
 	} else {
 		exporter = tracetest.NewNoopExporter()

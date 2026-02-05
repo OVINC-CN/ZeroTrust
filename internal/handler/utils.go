@@ -47,7 +47,7 @@ func unauthorizedResponse(ctx context.Context, w http.ResponseWriter, req *Verif
 		// parse template
 		var buf bytes.Buffer
 		if err := htmlTemplate.Execute(&buf, initData); err != nil {
-			logrus.WithContext(ctx).Errorf("[UnauthorizedResponse] failed to execute html template: %v", err)
+			logrus.WithContext(ctx).WithError(err).Error("[UnauthorizedResponse] failed to execute html template")
 			return
 		}
 		// write response
@@ -60,7 +60,6 @@ func unauthorizedResponse(ctx context.Context, w http.ResponseWriter, req *Verif
 	// response json
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusUnauthorized)
-	logrus.WithContext(ctx).Infof("Response headers: %v", w.Header())
 	data := map[string]interface{}{"code": 401, "error": "unauthorized", "message": "unauthorized", "data": nil}
 	_ = json.NewEncoder(w).Encode(data)
 }
@@ -89,7 +88,7 @@ func doAuth(ctx context.Context, w http.ResponseWriter, req *VerifyRequest) {
 	// get session data from redis
 	sessionData, err := store.GetSession(ctx, req.SessionID)
 	if err != nil {
-		logrus.WithContext(ctx).Warnf("failed to get session from store: %v", err)
+		logrus.WithContext(ctx).WithError(err).Warn("failed to get session from store")
 		unauthorizedResponse(ctx, w, req)
 		return
 	}
@@ -97,13 +96,16 @@ func doAuth(ctx context.Context, w http.ResponseWriter, req *VerifyRequest) {
 	// parse django session to extract user info
 	userInfo, err := session.ParseDjangoSession(ctx, []byte(sessionData))
 	if err != nil {
-		logrus.WithContext(ctx).Warnf("failed to parse session data: %v", err)
+		logrus.WithContext(ctx).WithError(err).Warn("failed to parse session data")
 		unauthorizedResponse(ctx, w, req)
 		return
 	}
 
 	// log successful authorization
-	logrus.WithContext(ctx).Infof("request authorized for %s (%s)", userInfo.UserID, maskSessionID(req.SessionID))
+	logrus.WithContext(ctx).WithFields(logrus.Fields{
+		"user_id":    userInfo.UserID,
+		"session_id": maskSessionID(req.SessionID),
+	}).Info("request authorized")
 
 	// return success response with user id
 	w.WriteHeader(http.StatusOK)

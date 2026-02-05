@@ -48,7 +48,7 @@ func main() {
 	go func() {
 		logrus.Infof("starting server on %s", addr)
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			logrus.Fatalf("server error %s", err)
+			logrus.WithError(err).Fatal("server error")
 		}
 	}()
 
@@ -60,7 +60,7 @@ func main() {
 	logrus.Info("shutting down server...")
 
 	if err := server.Shutdown(context.Background()); err != nil {
-		logrus.Errorf("server forced to shutdown %s", err)
+		logrus.WithError(err).Error("server forced to shutdown")
 	}
 
 	logrus.Info("server stopped")
