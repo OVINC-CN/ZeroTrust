@@ -29,3 +29,5 @@ otel:
 auth:
   client_ip_header: "X-Forwarded-For"
   session_cookie_name: "session-id"
+  login_url: "https://auth.example.com/login"
+  login_redirect_param: "next"

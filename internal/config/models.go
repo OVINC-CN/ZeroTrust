@@ -31,8 +31,10 @@ type OTelConfig struct {
 }
 
 type AuthConfig struct {
-	ClientIPHeader    string `yaml:"client_ip_header"`
-	SessionCookieName string `yaml:"session_cookie_name"`
+	ClientIPHeader     string `yaml:"client_ip_header"`
+	SessionCookieName  string `yaml:"session_cookie_name"`
+	LoginUrl           string `yaml:"login_url"`
+	LoginRedirectParam string `yaml:"login_redirect_param"`
 }
 
 type Config struct {
