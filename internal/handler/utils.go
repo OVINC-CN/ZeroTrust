@@ -67,17 +67,18 @@ func unauthorizedResponse(ctx context.Context, w http.ResponseWriter, req *Verif
 
 func doAuth(ctx context.Context, w http.ResponseWriter, req *VerifyRequest) {
 	// log incoming verify request
-	logrus.WithContext(ctx).Infof(
-		"verifying request from %s\n%s %s://%s%s\ntrace id: %s\nuser_agent: %s\nreferer: %s",
-		req.ClientIP,
-		req.Method,
-		req.Protocol,
-		req.Host,
-		req.Path,
-		req.TraceID,
-		req.UserAgent,
-		req.Referer,
-	)
+	logrus.WithContext(ctx).WithFields(
+		logrus.Fields{
+			"client_ip":  req.ClientIP,
+			"method":     req.Method,
+			"protocol":   req.Protocol,
+			"host":       req.Host,
+			"path":       req.Path,
+			"trace_id":   req.TraceID,
+			"user_agent": req.UserAgent,
+			"referer":    req.Referer,
+		},
+	).Infof("verifying request")
 
 	// check if session id is provided
 	if req.SessionID == "" {
