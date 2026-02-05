@@ -31,3 +31,4 @@ auth:
   session_cookie_name: "session-id"
   login_url: "https://auth.example.com/login"
   login_redirect_param: "next"
+  trace_id_header: "X-Trace-ID"
