@@ -76,6 +76,9 @@ cp configs/config.example.yaml configs/config.yaml
 server:
   host: "0.0.0.0"
   port: 8080
+  read_timeout: 10s
+  write_timeout: 10s
+  idle_timeout: 30s
 
 redis:
   host: "localhost"
@@ -85,15 +88,18 @@ redis:
   session_key_format: ":1:django.contrib.sessions.cache{session_id}"
 
 auth:
-  unauthorized_action: "redirect"  # 或 "deny"
-  login_url: "https://example.com/login"
-  session_cookie_name: "sessionid"
+  client_ip_header: "X-Forwarded-For"   # 读取客户端 IP 的请求头
+  session_cookie_name: "session-id"     # Session ID 的 Cookie 名称
 
 otel:
   enabled: false
   endpoint: "localhost:4317"
-  service_name: "zerotrust"
   insecure: true
+  resource:
+    service_name: "zerotrust"
+    service_version: "0.1.0"
+    environment: "development"
+    attributes: {}
 ```
 
 ### 运行
@@ -163,6 +169,38 @@ docker pull ghcr.io/ovinc-cn/zerotrust:latest
   "login_url": "https://example.com/login",
   "message": "unauthorized"
 }
+```
+
+### GET /forward-auth
+
+Traefik ForwardAuth 兼容端点。该端点从 Traefik 转发的请求头中读取请求信息，并从 Cookie 中验证 Session。
+
+**请求头：**
+
+| 请求头 | 描述 |
+|--------|------|
+| `X-Forwarded-Method` | 原始请求方法 |
+| `X-Forwarded-Host` | 原始请求主机 |
+| `X-Forwarded-Uri` | 原始请求 URI |
+| `User-Agent` | 客户端用户代理 |
+| `Referer` | 请求来源 |
+| `Cookie` | 必须包含 Session Cookie（通过 `auth.session_cookie_name` 配置） |
+| 客户端 IP 请求头 | 客户端 IP 地址（请求头名称通过 `auth.client_ip_header` 配置，默认：`X-Forwarded-For`） |
+
+**响应（已授权）：** `200 OK`
+
+**响应（未授权）：** `401 Unauthorized`
+
+**Traefik 配置示例：**
+
+```yaml
+http:
+  middlewares:
+    zerotrust-auth:
+      forwardAuth:
+        address: "http://zerotrust:8080/forward-auth"
+        authResponseHeaders:
+          - "X-User-Id"
 ```
 
 ### GET /health

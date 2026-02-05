@@ -76,6 +76,9 @@ cp configs/config.example.yaml configs/config.yaml
 server:
   host: "0.0.0.0"
   port: 8080
+  read_timeout: 10s
+  write_timeout: 10s
+  idle_timeout: 30s
 
 redis:
   host: "localhost"
@@ -85,15 +88,18 @@ redis:
   session_key_format: ":1:django.contrib.sessions.cache{session_id}"
 
 auth:
-  unauthorized_action: "redirect"  # or "deny"
-  login_url: "https://example.com/login"
-  session_cookie_name: "sessionid"
+  client_ip_header: "X-Forwarded-For"   # Header to read client IP from
+  session_cookie_name: "session-id"     # Cookie name for session ID
 
 otel:
   enabled: false
   endpoint: "localhost:4317"
-  service_name: "zerotrust"
   insecure: true
+  resource:
+    service_name: "zerotrust"
+    service_version: "0.1.0"
+    environment: "development"
+    attributes: {}
 ```
 
 ### Running
@@ -163,6 +169,38 @@ Verify a user session.
   "login_url": "https://example.com/login",
   "message": "unauthorized"
 }
+```
+
+### GET /forward-auth
+
+Traefik ForwardAuth compatible endpoint. This endpoint reads request information from Traefik's forwarded headers and validates the session from cookies.
+
+**Headers:**
+
+| Header | Description |
+|--------|-------------|
+| `X-Forwarded-Method` | Original request method |
+| `X-Forwarded-Host` | Original request host |
+| `X-Forwarded-Uri` | Original request URI |
+| `User-Agent` | Client user agent |
+| `Referer` | Request referer |
+| `Cookie` | Must contain the session cookie (configured via `auth.session_cookie_name`) |
+| Client IP Header | Client IP address (header name configured via `auth.client_ip_header`, default: `X-Forwarded-For`) |
+
+**Response (Authorized):** `200 OK`
+
+**Response (Unauthorized):** `401 Unauthorized`
+
+**Traefik Configuration Example:**
+
+```yaml
+http:
+  middlewares:
+    zerotrust-auth:
+      forwardAuth:
+        address: "http://zerotrust:8080/forward-auth"
+        authResponseHeaders:
+          - "X-User-Id"
 ```
 
 ### GET /health

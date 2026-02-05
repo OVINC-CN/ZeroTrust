@@ -30,6 +30,7 @@ func main() {
 	// setup http routes
 	mux := http.NewServeMux()
 	mux.HandleFunc("/verify", handler.VerifyHandler)
+	mux.HandleFunc("/forward-auth", handler.ForwardAuthHandler)
 	mux.HandleFunc("/health", handler.HealthHandler)
 
 	// create http server with timeouts
