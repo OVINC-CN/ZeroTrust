@@ -33,7 +33,7 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request) {
 	// decode request body into struct
 	var req VerifyRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		logrus.WithContext(ctx).Warnf("failed to decode request body: %v", err)
+		logrus.WithContext(ctx).WithError(err).Warn("failed to decode request body")
 		http.Error(w, "bad request", http.StatusBadRequest)
 		return
 	}

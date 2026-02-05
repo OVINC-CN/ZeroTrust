@@ -19,13 +19,13 @@ func init() {
 	// read config file from disk
 	data, err := os.ReadFile(*configPath)
 	if err != nil {
-		logrus.Fatalf("failed to read config file: %s", err)
+		logrus.WithError(err).Fatal("failed to read config file")
 	}
 
 	// parse yaml into config struct
 	cfg = &Config{}
 	if err := yaml.Unmarshal(data, cfg); err != nil {
-		logrus.Fatalf("failed to parse config file: %s", err)
+		logrus.WithError(err).Fatal("failed to parse config file")
 	}
 }
 
