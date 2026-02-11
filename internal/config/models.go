@@ -31,11 +31,12 @@ type OTelConfig struct {
 }
 
 type AuthConfig struct {
-	ClientIPHeader     string `yaml:"client_ip_header"`
-	SessionCookieName  string `yaml:"session_cookie_name"`
-	LoginUrl           string `yaml:"login_url"`
-	LoginRedirectParam string `yaml:"login_redirect_param"`
-	TraceIDHeader      string `yaml:"trace_id_header"`
+	ClientIPHeader     string   `yaml:"client_ip_header"`
+	SessionCookieName  string   `yaml:"session_cookie_name"`
+	LoginUrl           string   `yaml:"login_url"`
+	LoginRedirectParam string   `yaml:"login_redirect_param"`
+	TraceIDHeader      string   `yaml:"trace_id_header"`
+	VerifyMethods      []string `yaml:"verify_methods"`
 }
 
 type Config struct {

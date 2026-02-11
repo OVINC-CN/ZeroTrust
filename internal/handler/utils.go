@@ -65,6 +65,8 @@ func unauthorizedResponse(ctx context.Context, w http.ResponseWriter, req *Verif
 }
 
 func doAuth(ctx context.Context, w http.ResponseWriter, req *VerifyRequest) {
+	cfg := config.Get()
+
 	// log incoming verify request
 	logrus.WithContext(ctx).WithFields(
 		logrus.Fields{
@@ -78,6 +80,21 @@ func doAuth(ctx context.Context, w http.ResponseWriter, req *VerifyRequest) {
 			"referer":    req.Referer,
 		},
 	).Infof("verifying request")
+
+	// check methods
+	skipVerify := true
+	reqMethod := strings.ToLower(req.Method)
+	for _, m := range cfg.Auth.VerifyMethods {
+		if strings.ToLower(m) == reqMethod {
+			skipVerify = false
+			break
+		}
+	}
+	if skipVerify {
+		logrus.WithContext(ctx).Infof("ignore method: %s", req.Method)
+		w.WriteHeader(http.StatusOK)
+		return
+	}
 
 	// check if session id is provided
 	if req.SessionID == "" {

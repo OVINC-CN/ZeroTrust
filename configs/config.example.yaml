@@ -32,3 +32,9 @@ auth:
   login_url: "https://auth.example.com/login"
   login_redirect_param: "next"
   trace_id_header: "X-Trace-ID"
+  verify_methods:
+    - "get"
+    - "post"
+    - "put"
+    - "delete"
+    - "patch"
