@@ -38,10 +38,10 @@ func unauthorizedResponse(ctx context.Context, w http.ResponseWriter, req *Verif
 				url.QueryEscape(fmt.Sprintf("%s://%s%s", req.Protocol, req.Host, req.Path)),
 			),
 			"urlDisplayStyle":     "inline-block",
-			"traceID":             req.TraceID,
+			"traceID":             req.RequestID,
 			"traceIdDisplayStyle": "block",
 		}
-		if req.TraceID == "" {
+		if req.RequestID == "" {
 			initData["traceIdDisplayStyle"] = "none"
 		}
 		// parse template
@@ -75,7 +75,7 @@ func doAuth(ctx context.Context, w http.ResponseWriter, req *VerifyRequest) {
 			"protocol":   req.Protocol,
 			"host":       req.Host,
 			"path":       req.Path,
-			"trace_id":   req.TraceID,
+			"request_id": req.RequestID,
 			"user_agent": req.UserAgent,
 			"referer":    req.Referer,
 		},

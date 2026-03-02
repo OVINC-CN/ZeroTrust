@@ -18,7 +18,7 @@ type VerifyRequest struct {
 	UserAgent string `json:"user_agent"`
 	Referer   string `json:"referer"`
 	Accept    string `json:"accept"`
-	TraceID   string `json:"trace_id"`
+	RequestID string `json:"request_id"`
 }
 
 func VerifyHandler(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +56,7 @@ func ForwardAuthHandler(w http.ResponseWriter, r *http.Request) {
 		UserAgent: r.Header.Get("User-Agent"),
 		Referer:   r.Header.Get("Referer"),
 		Accept:    r.Header.Get("Accept"),
-		TraceID:   r.Header.Get(cfg.Auth.TraceIDHeader),
+		RequestID: r.Header.Get(cfg.Auth.TraceIDHeader),
 	}
 
 	// get session id from cookies
