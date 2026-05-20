@@ -67,9 +67,15 @@ func unauthorizedResponse(ctx context.Context, w http.ResponseWriter, req *Verif
 func doAuth(ctx context.Context, w http.ResponseWriter, req *VerifyRequest) {
 	cfg := config.Get()
 
-	// log incoming verify request
-	logrus.WithContext(ctx).WithFields(
-		logrus.Fields{
+	var (
+		result    string
+		reason    string
+		userID    string
+		sessionID string
+		logErr    error
+	)
+	defer func() {
+		fields := logrus.Fields{
 			"client_ip":  req.ClientIP,
 			"method":     req.Method,
 			"protocol":   req.Protocol,
@@ -78,8 +84,27 @@ func doAuth(ctx context.Context, w http.ResponseWriter, req *VerifyRequest) {
 			"request_id": req.RequestID,
 			"user_agent": req.UserAgent,
 			"referer":    req.Referer,
-		},
-	).Infof("verifying request")
+			"user_id":    "",
+			"session_id": "",
+			"reason":     "",
+		}
+		if userID != "" {
+			fields["user_id"] = userID
+		}
+		if sessionID != "" {
+			fields["session_id"] = maskSessionID(sessionID)
+		}
+		if reason != "" {
+			fields["reason"] = reason
+		}
+
+		entry := logrus.WithContext(ctx).WithFields(fields)
+		if logErr != nil {
+			entry.WithError(logErr).Warn(result)
+			return
+		}
+		entry.Info(result)
+	}()
 
 	// check methods
 	skipVerify := true
@@ -91,13 +116,16 @@ func doAuth(ctx context.Context, w http.ResponseWriter, req *VerifyRequest) {
 		}
 	}
 	if skipVerify {
-		logrus.WithContext(ctx).Infof("ignore method: %s", req.Method)
+		result = "request skipped"
+		reason = "method_not_verified"
 		w.WriteHeader(http.StatusOK)
 		return
 	}
 
 	// check if session id is provided
 	if req.SessionID == "" {
+		result = "request unauthorized"
+		reason = "missing_session"
 		unauthorizedResponse(ctx, w, req)
 		return
 	}
@@ -105,7 +133,9 @@ func doAuth(ctx context.Context, w http.ResponseWriter, req *VerifyRequest) {
 	// get session data from redis
 	sessionData, err := store.GetSession(ctx, req.SessionID)
 	if err != nil {
-		logrus.WithContext(ctx).WithError(err).Warn("failed to get session from store")
+		result = "request unauthorized"
+		reason = "session_store_error"
+		logErr = err
 		unauthorizedResponse(ctx, w, req)
 		return
 	}
@@ -113,16 +143,16 @@ func doAuth(ctx context.Context, w http.ResponseWriter, req *VerifyRequest) {
 	// parse django session to extract user info
 	userInfo, err := session.ParseDjangoSession(ctx, []byte(sessionData))
 	if err != nil {
-		logrus.WithContext(ctx).WithError(err).Warn("failed to parse session data")
+		result = "request unauthorized"
+		reason = "session_parse_error"
+		logErr = err
 		unauthorizedResponse(ctx, w, req)
 		return
 	}
 
-	// log successful authorization
-	logrus.WithContext(ctx).WithFields(logrus.Fields{
-		"user_id":    userInfo.UserID,
-		"session_id": maskSessionID(req.SessionID),
-	}).Info("request authorized")
+	result = "request authorized"
+	userID = userInfo.UserID
+	sessionID = req.SessionID
 
 	// return success response with user id
 	w.WriteHeader(http.StatusOK)
